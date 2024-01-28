@@ -9,7 +9,7 @@ exports.get_transaction_list = asyncHandler(
 // transaction
 exports.get_transaction_by_id = asyncHandler(
     async (req, res, next) => {
-      res.send("TODO return transaction by id");
+      res.send(`TODO return transaction by id: ${req.params.id}`);
     });
 
 exports.post_inject_money = asyncHandler(

@@ -1,20 +1,21 @@
 const express = require("express");
+const bodyParser = require("body-parser");
+const compression = require("compression");
+const cors = require("cors");
 
 const transactionRouter = require("./routes/TransactionRoutes");
 const indexRouter = require("./routes/IndexRoutes");
 
 const app = express();
 
-// app.use(compression());
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({extended: false}));
-// app.use(cors({origin: true}));
+const PORT = process.env.PORT || 5001;
 
-console.log("app use t");
-app.use("/v1/transactions", transactionRouter);
-console.log("app use index")
+app.use(compression());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(cors({origin: true}));
 
+app.use("/api/v1/transactions", transactionRouter);
 app.use("/", indexRouter);
 
-console.log("app is running")
-
+app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
