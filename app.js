@@ -8,7 +8,7 @@ const indexRouter = require("./routes/IndexRoutes");
 
 const app = express();
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 3000;
 
 app.use(compression());
 app.use(bodyParser.json());
