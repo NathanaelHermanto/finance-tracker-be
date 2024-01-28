@@ -1,11 +1,21 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const express = require("express");
+const bodyParser = require("body-parser");
+const compression = require("compression");
+const cors = require("cors");
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+const transactionRouter = require("./routes/TransactionRoutes");
+const indexRouter = require("./routes/IndexRoutes");
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+const app = express();
+
+const PORT = process.env.PORT || 5001;
+
+app.use(compression());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(cors({origin: true}));
+
+app.use("/api/v1/transactions", transactionRouter);
+app.use("/", indexRouter);
+
+app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
