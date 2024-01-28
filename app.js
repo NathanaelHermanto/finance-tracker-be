@@ -1,11 +1,20 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const express = require("express");
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+const transactionRouter = require("./routes/TransactionRoutes");
+const indexRouter = require("./routes/IndexRoutes");
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+const app = express();
+
+// app.use(compression());
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({extended: false}));
+// app.use(cors({origin: true}));
+
+console.log("app use t");
+app.use("/v1/transactions", transactionRouter);
+console.log("app use index")
+
+app.use("/", indexRouter);
+
+console.log("app is running")
+
