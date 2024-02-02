@@ -1,10 +1,26 @@
 const asyncHandler = require("express-async-handler");
+const supabase = require("../services/ClientService");
 
 // transaction list
 exports.get_transaction_list = asyncHandler(
-    async (req, res, next) => {
-      res.send("TODO return list of transactions");
-    });
+  async (req, res, next) => {
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*');
+
+      if (error) {
+        throw new Error(`Supabase query failed: ${error.message}`);
+      }
+
+      res.status(200).json({ data });
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+);
+
 
 // transaction
 exports.get_transaction_by_id = asyncHandler(
@@ -46,7 +62,19 @@ exports.delete_transaction_by_id = asyncHandler(
 // / balance
 exports.get_balance = asyncHandler(
     async (req, res, next) => {
-      res.send("TODO return balance");
+      try {
+        const { data, error } = await supabase
+          .rpc('get_balance');
+  
+        if (error) {
+          throw new Error(`Supabase query failed: ${error.message}`);
+        }
+  
+        res.status(200).json({ data });
+      } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
     });
 
 exports.get_cash_balance = asyncHandler(
