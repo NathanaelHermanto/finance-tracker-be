@@ -8,19 +8,17 @@ router.get("/", transactionController.get_transaction_list);
 router.get("/balance", transactionController.get_balance);
 router.get("/:id", transactionController.get_transaction_by_id);
 
-router.post("/inject-money", transactionController.post_inject_money);
 router.post(
-  "/sell",
+  "/",
   [
     body("amount").notEmpty().withMessage("Amount is required"),
-    body("inventory_amount")
+    body("type")
       .notEmpty()
-      .withMessage("Inventory amount is required"),
+      .withMessage("type is required"),
+    body("notes"),
   ],
-  transactionController.post_sell
+  transactionController.post_transaction
 );
-router.post("/sell-delivery", transactionController.post_sell_delivery);
-router.post("/buy", transactionController.post_buy);
 
 router.patch("/:id", transactionController.patch_transaction_by_id);
 
