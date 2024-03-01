@@ -1,5 +1,4 @@
 const asyncHandler = require("express-async-handler");
-const supabase = require("../services/ClientService");
 const { validationResult } = require("express-validator");
 const inventories = require("../models/Inventories")
 

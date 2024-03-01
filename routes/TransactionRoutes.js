@@ -20,7 +20,17 @@ router.post(
   transactionController.post_transaction
 );
 
-router.patch("/:id", transactionController.patch_transaction_by_id);
+router.patch(
+    "/:id", 
+    [
+        body("amount").notEmpty().withMessage("Amount is required"),
+        body("type")
+          .notEmpty()
+          .withMessage("type is required"),
+        body("notes"),
+      ],
+    transactionController.patch_transaction_by_id
+);
 
 router.delete("/:id", transactionController.delete_transaction_by_id);
 
