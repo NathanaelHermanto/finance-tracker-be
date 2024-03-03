@@ -1,88 +1,91 @@
 const asyncHandler = require("express-async-handler");
-const supabase = require("../services/ClientService");
+const { validationResult } = require("express-validator");
+const transactions = require("../models/Transactions");
 
-// transaction list
-exports.get_transaction_list = asyncHandler(
-  async (req, res, next) => {
-    try {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*');
+exports.get_transaction_list = asyncHandler(async (_req, res, _next) => {
+  const data = await transactions.getAllTransactions();
+  res.status(200).json({ data });
+});
 
-      if (error) {
-        throw new Error(`Supabase query failed: ${error.message}`);
-      }
+exports.get_transaction_by_id = asyncHandler(async (req, res, _next) => {
+  const id = req.params.id;
+  const data = await transactions.getTransactionById(id);
+  res.status(200).json({ data });
+});
 
-      res.status(200).json({ data });
-    } catch (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
+exports.post_transaction = asyncHandler(async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
-);
 
+  try {
+    const { amount, type, notes } = req.body;
+    const data = await transactions.saveTransaction(amount, type, notes);
+    res.status(200).json({ data });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(400).json({ error: "permission is missing" });
+  }
+});
 
-// transaction
-exports.get_transaction_by_id = asyncHandler(
-    async (req, res, next) => {
-      res.send(`TODO return transaction by id: ${req.params.id}`);
-    });
+exports.patch_transaction_by_id = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const { amount, notes } = req.body;
 
-exports.post_inject_money = asyncHandler(
-    async (req, res, next) => {
-      res.send("TODO inject money");
-    });
+  try {
+    // Check if either amount or notes is provided in the request body
+    if (!amount && !notes) {
+      return res
+        .status(400)
+        .json({ error: "Amount or notes must be provided for update" });
+    }
 
-exports.post_sell_cash = asyncHandler(
-    async (req, res, next) => {
-      res.send("TODO sell on cash");
-    });
+    // Construct the update object with provided fields
+    const updateObject = {};
+    if (amount) {
+      updateObject.amount = amount;
+    }
+    if (notes) {
+      updateObject.notes = notes;
+    }
 
-exports.post_sell_credit = asyncHandler(
-    async (req, res, next) => {
-      res.send("TODO sell on credit");
-    });
+    // Update the transaction with the provided fields
 
-exports.post_buy = asyncHandler(
-    async (req, res, next) => {
-      res.send("TODO buy");
-    });
+    const data = await transactions.updateTransactionById(id, updateObject);
 
-exports.patch_transaction_by_id = asyncHandler(
-    async (req, res, next) => {
-      res.send("TODO update/patch transaction by id");
-    });
+    // Check if any records were updated
+    if (data.length === 0) {
+      return res.status(404).json({ error: "Transaction not found" });
+    }
 
-exports.delete_transaction_by_id = asyncHandler(
-    async (req, res, next) => {
-      res.send("TODO delete transaction by id");
-    });
+    res.status(200).json({ transaction: data[0] });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
+exports.delete_transaction_by_id = asyncHandler(async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const transaction = await transactions.getTransactionById(id);
 
-// / balance
-exports.get_balance = asyncHandler(
-    async (req, res, next) => {
-      try {
-        const { data, error } = await supabase
-          .rpc('get_balance');
-  
-        if (error) {
-          throw new Error(`Supabase query failed: ${error.message}`);
-        }
-  
-        res.status(200).json({ data });
-      } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-      }
-    });
+    if (transaction.length===0) {
+      res.status(400).json({ message: `Transaction with id: ${id} is not found` });
+    } else {
+      // delete
+      await transactions.deleteTransactionById(id);
+      res.status(200).json({ message: "Transaction deleted successfully" });
+    }
 
-exports.get_cash_balance = asyncHandler(
-    async (req, res, next) => {
-      res.send("TODO return cash balance");
-    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(400).json({ error: "permission is missing" });
+  }
+});
 
-exports.get_credit_balance = asyncHandler(
-    async (req, res, next) => {
-      res.send("TODO return credit balance");
-    });
+exports.get_balance = asyncHandler(async (req, res, next) => {
+  const data = await transactions.getBalance();
+  res.status(200).json({ data });
+});
